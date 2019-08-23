@@ -32,6 +32,7 @@
       - libffi-devel
       - openssl-devel
       - git
+      - docker
 
 - name: upgrade kernels
   yum: name={{ packages }} state=latest disable_gpg_check=yes
@@ -55,6 +56,15 @@
 - name: start vboxdrv
   service: name=vboxdrv state=started enabled=yes
 
+- name: enable docker and ntp services
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - docker
+    - ntpd
+
+- name: install vagrant vbguest plugin
+  command: vagrant plugin install vagrant-vbguest
+
 - name: install dcos-e2e (this may take a while)
   command: pip3 install --upgrade git+https://github.com/dcos/dcos-e2e.git@2019.06.19.0
 
@@ -64,4 +74,9 @@
     dest: /usr/bin/minidcos
     mode: '0755'
 
+- name: downalod dcos installer
+  command: minidcos vagrant download-installer
+
+- name: create dcos cluster. see global_vars.yml for settings
+  command: minidcos vagrant create ./dcos_generate_config.sh --masters={{ masters }} --public-agents={{ pagents }} --agents={{ agents }} --vm-memory-mb={{ vmmemory }}
 
