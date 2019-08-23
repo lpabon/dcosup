@@ -78,5 +78,5 @@
   command: minidcos vagrant download-installer
 
 - name: create dcos cluster. see global_vars.yml for settings
-  command: minidcos vagrant create ./dcos_generate_config.sh --masters={{ masters }} --public-agents={{ pagents }} --agents={{ agents }} --vm-memory-mb={{ vmmemory }}
+  command: minidcos vagrant create ./dcos_generate_config.sh --masters={{ masters }} --public-agents={{ public_agents }} --agents={{ agents }} --vm-memory-mb={{ vmmemory }}
 

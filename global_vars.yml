@@ -2,4 +2,4 @@
 masters: 1
 agents: 3
 vmmemory: 4196
-publicagents: 3
+public_agents: 3
