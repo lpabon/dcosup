@@ -1,0 +1,67 @@
+- name: disable selinux
+  selinux: state=disabled
+
+- name: install epel
+  yum: name=epel-release state=present disable_gpg_check=yes
+
+- name: install utility programs
+  yum: name={{ packages }} state=present disable_gpg_check=yes
+  vars:
+    packages:
+      - wget
+      - ntp
+      - screen
+      - epel-release
+      - vim
+      - ncurses-term
+      - gcc
+      - make
+      - patch
+      - python36-devel
+      - python36
+      - python36-pip
+      - kernel-devel
+      - kernel-headers
+      - jq
+      - lvm2
+      - yum-utils
+      - device-mapper-persistent-data
+      - dkms
+      - elfutils-libelf-devel
+      - qt5-qtx11extras
+      - libffi-devel
+      - openssl-devel
+      - git
+
+- name: upgrade kernels
+  yum: name={{ packages }} state=latest disable_gpg_check=yes
+  vars:
+    packages:
+      - kernel
+      - kernel-devel
+      - kernel-headers
+  register: kernel
+
+- name: reboot if updated
+  reboot:
+  when: kernel.changed
+
+- name: install vagrant
+  yum: name=https://releases.hashicorp.com/vagrant/2.2.5/vagrant_2.2.5_x86_64.rpm state=present disable_gpg_check=yes
+
+- name: install virtualbox
+  yum: name=https://download.virtualbox.org/virtualbox/6.0.10/VirtualBox-6.0-6.0.10_132072_el7-1.x86_64.rpm state=present disable_gpg_check=yes
+
+- name: start vboxdrv
+  service: name=vboxdrv state=started enabled=yes
+
+- name: install dcos-e2e (this may take a while)
+  command: pip3 install --upgrade git+https://github.com/dcos/dcos-e2e.git@2019.06.19.0
+
+- name: install minidcos
+  get_url:
+    url: https://github.com/dcos/dcos-e2e/releases/download/2019.06.19.0/minidcos
+    dest: /usr/bin/minidcos
+    mode: '0755'
+
+
