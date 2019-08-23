@@ -33,6 +33,30 @@ sudo yum install qemu libvirt libvirt-devel ruby-devel gcc qemu-kvm ansible
 vagrant plugin install vagrant-libvirt
 ```
 
+### Nested VM support
+
+Modprobe options:
+
+```
+options kvm_intel nested=1 enable_apicv=n
+options kvm ignore_msrs=1
+```
+
+Reboot the host, and then run the following commands.
+
+```
+# want Y to be returned
+$ cat /sys/module/kvm/parameters/ignore_msrs
+
+# want N to be returned
+$ cat /sys/module/kvm_intel/parameters/enable_apicv
+
+# want Y to be returned
+$ cat /sys/module/kvm_intel/parameters/nested
+```
+
+[Source](https://fabianlee.org/2018/09/19/kvm-deploying-a-nested-version-of-vmware-esxi-6-7-inside-kvm)
+
 ## Usage
 This setup sets up a nested VM with 32 G of RAM.
 

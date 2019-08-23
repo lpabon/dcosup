@@ -50,20 +50,34 @@
 - name: install vagrant
   yum: name=https://releases.hashicorp.com/vagrant/2.2.5/vagrant_2.2.5_x86_64.rpm state=present disable_gpg_check=yes
 
-- name: install virtualbox
-  yum: name=https://download.virtualbox.org/virtualbox/6.0.10/VirtualBox-6.0-6.0.10_132072_el7-1.x86_64.rpm state=present disable_gpg_check=yes
-
-- name: start vboxdrv
-  service: name=vboxdrv state=started enabled=yes
+- name: install virtualbox 5.1.18 which is used by the DCOS boxes
+  yum: name=https://download.virtualbox.org/virtualbox/5.1.18/VirtualBox-5.1-5.1.18_114002_el7-1.x86_64.rpm state=present disable_gpg_check=yes
 
 - name: enable docker and ntp services
   service: name={{ item }} state=started enabled=yes
   with_items:
     - docker
     - ntpd
+    - vboxdrv
+  register: services
 
 - name: install vagrant vbguest plugin
   command: vagrant plugin install vagrant-vbguest
+
+- name: download extensions
+  get_url:
+    url: https://download.virtualbox.org/virtualbox/5.1.18/Oracle_VM_VirtualBox_Extension_Pack-5.1.18-114002.vbox-extpack
+    dest: /root/Oracle_VM_VirtualBox_Extension_Pack-5.1.18-114002.vbox-extpack
+    mode: '0644'
+  register: downloadedext
+
+- name: install vbox extentions
+  shell: yes | vboxmanage extpack install /root/Oracle_VM_VirtualBox_Extension_Pack-5.1.18-114002.vbox-extpack
+  when: downloadedext.changed
+
+- name: reboot if vbox was installed
+  reboot:
+  when: services.changed
 
 - name: install dcos-e2e (this may take a while)
   command: pip3 install --upgrade git+https://github.com/dcos/dcos-e2e.git@2019.06.19.0
