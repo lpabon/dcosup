@@ -8,6 +8,7 @@ DISKS = 1
 MEMORY = 32*1024
 CPUS = 8
 NESTED = true
+DCOSUIPORT = 12080
 
 ### TYPE HERE A PREFIX ###
 PREFIX = "luis-dcos"
@@ -16,6 +17,7 @@ Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
     config.vm.box = "centos/7"
 	config.vm.synced_folder '.', '/vagrant', disabled: true
+	config.vm.network "forwarded_port", guest: 8080, host: DCOSUIPORT
 
     # Override
     config.vm.provider :libvirt do |v,override|

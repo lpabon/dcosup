@@ -1,6 +1,24 @@
 - name: disable selinux
   selinux: state=disabled
 
+- name: mkfs vdb
+  filesystem:
+    fstype: xfs
+    dev: /dev/vdb
+
+- name: create /root/VirtualBox VMs
+  file:
+    path: /root/VirtualBox VMs
+    state: directory
+    mode: '0755'
+
+- name: mount vdb under /root/VirtualBox VMs
+  mount:
+    src: /dev/vdb
+    path: /root/VirtualBox VMs
+    fstype: xfs
+    state: mounted
+
 - name: install epel
   yum: name=epel-release state=present disable_gpg_check=yes
 
@@ -8,6 +26,7 @@
   yum: name={{ packages }} state=present disable_gpg_check=yes
   vars:
     packages:
+      - socat
       - wget
       - ntp
       - screen
@@ -93,4 +112,11 @@
 
 - name: create dcos cluster. see global_vars.yml for settings
   command: minidcos vagrant create ./dcos_generate_config.sh --masters={{ masters }} --public-agents={{ public_agents }} --agents={{ agents }} --vm-memory-mb={{ vmmemory }}
+
+- name: get ui ip
+  shell: minidcos vagrant inspect | jq -r '."Web UI"' | sed -e "s#http://##"
+  register: inspect
+
+- debug:
+    msg: use: socat TCP-LISTEN:8080,fork,reuseaddr TCP:{{ inspect.stdout_lines }}:80 in vm to redirect to DCOS vm
 
